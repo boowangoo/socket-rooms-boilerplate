@@ -1,5 +1,6 @@
 const path = require('path');
 const nodeExternals = require('webpack-node-externals');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 const common = {
   module: {
@@ -16,12 +17,18 @@ const common = {
 };
 
 const client = {
-  entry: './public/js/index.ts',
+  entry: './client/index.ts',
   devtool: 'inline-source-map',
   output: {
     filename: 'client.bundle.js',
-    path: path.resolve(__dirname, 'dist/client')
-  }
+    path: path.resolve(__dirname, 'dist/client'),
+    publicPath: '/'
+  },
+  plugins: [
+    new HtmlWebpackPlugin({
+      template: path.resolve(__dirname, 'client/html/mindex.html')
+    })
+  ]
 };
 
 const server = {
@@ -31,6 +38,9 @@ const server = {
     path: path.resolve(__dirname, 'dist/server')
   },
   target: 'node',
+  node: {
+    __dirname: true
+  },
   externals: [nodeExternals()]
 };
 

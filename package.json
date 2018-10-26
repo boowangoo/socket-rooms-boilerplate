@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/boowangoo/socket-rooms-boilerplate#readme",
   "devDependencies": {
+    "html-webpack-plugin": "^3.2.0",
     "source-map-support": "^0.5.9",
     "ts-loader": "^5.2.2",
     "typescript": "^3.1.3",
