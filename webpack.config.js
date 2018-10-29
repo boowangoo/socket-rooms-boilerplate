@@ -26,7 +26,10 @@ const client = {
   },
   plugins: [
     new HtmlWebpackPlugin({
-      template: path.resolve(__dirname, 'client/html/mindex.html')
+      template: path.resolve(__dirname, 'client/html/index.html')
+    }),
+    new HtmlWebpackPlugin({
+      template: path.resolve(__dirname, 'client/html/room.html')
     })
   ]
 };
