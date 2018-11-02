@@ -1,25 +1,50 @@
-import fs from 'fs';
-import path from 'path';
-
 import express from 'express';
-import { Server } from 'https';
+import socketIO from 'socket.io'
+import { createServer, Server } from 'http';
 
-const app = express();
+import { ExpressSetup } from './expressSetup';
+import { SocketSetup } from './socketSetup';
 
-const PORT = process.env.PORT || 3000;
+export default class MyServer {
+    public static readonly PORT: number = 3000;
+    private app: express.Application;
+    private server: Server;
+    private io: socketIO.Server;
+    private port: string | number;
 
-app.use(express.static('dist/client'));
+    constructor() {
+        this.createApp();
+        this.config();
+        this.createServer();
+        this.sockets();
+        this.listen();
+    }
 
-// app.get('/', (req, res) => {
-//     fs.readdir(__dirname, (err, items) => { console.log(items); });
-//     res.sendFile(__dirname + '/god.html')
-// });
+    private config(): void {
+        this.port = process.env.PORT || MyServer.PORT;
+    }
 
-app.get('/createRoom', (req, res) => {
-    res.send('hi')
-});
+    private createApp(): void {
+        this.app = express();
+        ExpressSetup.setup(this.app);
+    }
 
-app.listen(PORT, () => {
-    console.log('listening on *:' + PORT);
-    console.log('__dirname: ' + __dirname);
-});
+    private createServer(): void {
+        this.server = createServer(this.app);
+    }
+   
+    private sockets(): void {
+        this.io = socketIO(this.server);
+        SocketSetup.setup(this.io);
+    }
+
+    private listen(): void {
+        this.server.listen(this.port, () => {
+            console.log('listening on *:' + this.port);
+        });
+    }
+
+    public getApp(): express.Application { return this.app; }
+}
+
+new MyServer();
