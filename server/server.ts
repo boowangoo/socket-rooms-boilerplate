@@ -39,7 +39,7 @@ export default class MyServer {
     }
 
     private listen(): void {
-        this.server = this.app.listen(this.port, () => {
+        this.server.listen(this.port, () => {
             console.log('listening on *:' + this.port);
         });   
     }
