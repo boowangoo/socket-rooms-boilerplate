@@ -1,21 +1,25 @@
 const path = require('path');
+const webpack = require("webpack");
 const nodeExternals = require('webpack-node-externals');
 
 module.exports = {
-  entry: './server/server.ts',
+  entry: [
+    'webpack/hot/poll?100',
+    './server/server.ts'
+  ],
   output: {
     filename: 'server.bundle.js',
     path: path.resolve(__dirname, 'dist/server'),
     publicPath: '/'
   },
-  mode: 'development',
   target: 'node',
   node: {
     __dirname: false,
     __filename: false
   },
+  mode: 'development',
   resolve: { extensions: ['.ts', '.js'] },
-  externals: [nodeExternals()],
+  externals: [nodeExternals({ whitelist: ['webpack/hot/poll?100'] })],
   module: {
     rules: [
       {
@@ -27,8 +31,8 @@ module.exports = {
         test: /\.html$/,
         use: 'html-loader',
         exclude: /node_modules/
-        // options: { minimize: true }
       }
     ]
-  }
+  },
+  plugins: [new webpack.HotModuleReplacementPlugin()]
 };

@@ -1,5 +1,5 @@
 import express from 'express';
-import socketIO from 'socket.io'
+import socketIO from 'socket.io';
 import { createServer, Server } from 'http';
 
 import { ExpressSetup } from './expressSetup';
@@ -39,12 +39,21 @@ export default class MyServer {
     }
 
     private listen(): void {
-        this.server.listen(this.port, () => {
+        // this.server.listen(this.port, () => {
+        this.server = this.app.listen(this.port, () => {
             console.log('listening on *:' + this.port);
-        });
+        });   
     }
 
     public getApp(): express.Application { return this.app; }
+    public getServer(): Server { return this.server; }
 }
 
-new MyServer();
+const myServer = new MyServer();
+
+declare const module: any;
+
+// if (module.hot) {
+//     module.hot.accept();
+//     module.hot.dispose(() => myServer.getServer().close);
+// }
