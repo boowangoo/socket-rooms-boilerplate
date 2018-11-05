@@ -39,7 +39,6 @@ export default class MyServer {
     }
 
     private listen(): void {
-        // this.server.listen(this.port, () => {
         this.server = this.app.listen(this.port, () => {
             console.log('listening on *:' + this.port);
         });   
@@ -50,10 +49,3 @@ export default class MyServer {
 }
 
 const myServer = new MyServer();
-
-declare const module: any;
-
-// if (module.hot) {
-//     module.hot.accept();
-//     module.hot.dispose(() => myServer.getServer().close);
-// }
