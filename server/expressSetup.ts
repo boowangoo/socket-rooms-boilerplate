@@ -9,7 +9,6 @@ export class ExpressSetup {
 
         app.post('/createRoom', (req, res) => {
             console.log('qwertyo');
-            res.sendStatus(200);
         });
     }
 }

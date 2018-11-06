@@ -1,11 +1,27 @@
 import $ from 'jquery';
 import io from 'socket.io-client';
 
-import roomHtml from './html/room.html';
-import selectHtml from './html/select.html';
+import { Select } from './select'
 
-const socket: SocketIOClient.Socket = io();
 
-console.log(socket);
+class Index {
+    private select: Select;
+    private socket: SocketIOClient.Socket;
 
-$('#container').html(selectHtml);
+    constructor() {
+        this.socket = io();
+        this.select = new Select(this.socket);
+
+        this.loadContainer();
+    }
+
+    private loadContainer(): void {
+        $('#container').html(this.select.getHTML());
+    }
+
+    public changeTemplate(html: string): void {
+        $('#container').html(html);
+    }
+}
+
+const index = new Index();

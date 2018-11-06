@@ -1,0 +1,1 @@
+import roomHtml from './html/room.html';

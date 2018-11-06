@@ -5,7 +5,7 @@ import { createServer, Server } from 'http';
 import { ExpressSetup } from './expressSetup';
 import { SocketSetup } from './socketSetup';
 
-export default class MyServer {
+class MyServer {
     public static readonly PORT: number = 3000;
     private app: express.Application;
     private server: Server;
