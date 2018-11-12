@@ -8,7 +8,7 @@ export class ExpressSetup {
         app.use(express.urlencoded({ extended: true }));
 
         app.post('/createRoom', (req, res) => {
-            console.log('qwertyo');
+            
         });
     }
 }

@@ -1,33 +1,60 @@
 import $ from 'jquery';
 
-import selectHtml from './html/select.html';
+import Room from './room'
 
-export class Select {
+import selectHtml from './html/select.html';
+import { stringify } from 'querystring';
+
+export default class Select {
+    private socket: SocketIOClient.Socket;
+
     private html: string;
+    private roomMap: Map<string, Room>;
 
     constructor(socket: SocketIOClient.Socket) {
+        this.socket = socket;
+
+        this.createRoomCtrl();
+
         this.html = selectHtml;
-        this.createRoomCtrl(socket);
-    }
+        this.roomMap = new Map<string, Room>();
 
-    private loadElements(): void {
-    }
-
-    private createRoomCtrl(socket: SocketIOClient.Socket): void {
-        $(document).ready(() => {
-            $('#createRoom').click(() => {
-                const roomName = $('#roomName').val();
-                socket.emit('joinRoom', roomName);
-                $('#roomName').val('');
-            });
+        socket.on('createRoom', (roomId: string) => {
+            this.createRoom(roomId);
         });
     }
 
-    private createRoom(): void {
-        $('#roomList tr:last').after(`<tr>
-            <td>RoomName</td>
-            <button id="joinRoom" type="button">Join</button>
-        </tr>`);
+    private createRoomCtrl(): void {
+        $(document).ready(() => {
+            $('#createRoom').click(() => {
+                const roomId = $('#roomId').val();
+
+                this.socket.emit('createRoom', roomId, (roomList: Array<string>) => {
+                    const rowList = roomList.map((roomId: string) => {
+                            const tmpRoom: Room = this.roomMap.get(roomId);
+                            return `<tr>
+                                <td>${tmpRoom.roomId}</td>
+                                <td>${tmpRoom.players}/${tmpRoom.capacity}</td>
+                            </tr>`
+                        }).join('');
+
+                    $('#roomList').html(rowList);
+                });
+            });
+
+            $('#roomId').val('');
+        });
+    }
+
+    private createRoom(roomID: string): Room {
+        const newRoom: Room = new Room(roomID, this.socket);
+
+        if (newRoom) {
+            console.log('roomMap', this.roomMap);
+            this.roomMap.set(roomID, newRoom);
+        }
+
+        return newRoom;
     }
 
     public getHTML(): string { return this.html; }

@@ -1,7 +1,7 @@
 import $ from 'jquery';
 import io from 'socket.io-client';
 
-import { Select } from './select'
+import Select from './select'
 
 
 class Index {
