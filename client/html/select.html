@@ -6,4 +6,12 @@
 </form>
 
 <p>Or Join a Room</p>
-<table id="roomList"></table>
+<table id="roomListTable"></table>
+
+<script id="selectRoomRow" type="text/x-handlebars-template">
+  <tr id="{{ rowId }}">
+    <td>{{ roomId }}</td>
+    <td>{{ players }}/{{ capacity }}</td>
+    <td><button>Join Room</button></td>
+  </tr>
+</script>

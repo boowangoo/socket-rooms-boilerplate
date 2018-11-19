@@ -1,13 +1,16 @@
 import roomHtml from './html/room.html';
+import Router from './router';
 
 export default class Room {
     private _roomId: string;
     private _players: number;
     private _capacity: number;
 
-    constructor(roomId: string, socket: any) {
+    constructor(roomId: string, players: number, capacity: number,
+            router: Router, socket: SocketIOClient.Socket) {
         this._roomId = roomId;
-        this.update(socket)   
+        this._players = players;
+        this._capacity = capacity;
     }
 
     private update(socket: any): void {
@@ -22,4 +25,5 @@ export default class Room {
     public get players() { return this._players; }
     public get capacity() { return this._capacity; }
 
+    public get HTML(): string { return roomHtml; }
 }

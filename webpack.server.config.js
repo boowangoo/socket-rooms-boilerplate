@@ -14,11 +14,12 @@ module.exports = {
   target: 'node',
   node: {
     __dirname: false,
-    __filename: false
+    __filename: false,
+    fs: 'empty'
   },
   mode: 'development',
   resolve: { extensions: ['.ts', '.js'] },
-  externals: [nodeExternals({ whitelist: ['webpack/hot/poll?100'] })],
+  externals: [nodeExternals()],
   module: {
     rules: [
       {

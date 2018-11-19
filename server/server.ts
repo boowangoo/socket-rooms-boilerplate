@@ -3,7 +3,7 @@ import socketIO from 'socket.io';
 import { createServer, Server } from 'http';
 
 import { ExpressSetup } from './expressSetup';
-import { SocketSetup } from './socketSetup';
+import { SocketConnection } from './socketSetup';
 
 class MyServer {
     public static readonly PORT: number = 3000;
@@ -35,12 +35,12 @@ class MyServer {
    
     private sockets(): void {
         this.io = socketIO(this.server);
-        SocketSetup.setup(this.io);
+        new SocketConnection(this.io);
     }
 
     private listen(): void {
         this.server.listen(this.port, () => {
-            console.log('listening on *:' + this.port);
+            console.log(`listening on *:${ this.port }`);
         });   
     }
 

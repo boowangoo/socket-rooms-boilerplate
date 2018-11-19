@@ -10,6 +10,9 @@ module.exports = {
   },
   mode: 'development',
   target: 'web',
+  node: {
+    fs: 'empty'
+  },
   resolve: { extensions: ['.ts', '.js'] },
   devtool: 'inline-source-map',
   module: {

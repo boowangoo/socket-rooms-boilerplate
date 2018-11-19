@@ -1,44 +1,39 @@
 import $ from 'jquery';
+import io from 'socket.io-client';
+import Handlebars from 'handlebars';
+import { stringify } from 'querystring';
 
 import Room from './room'
 
 import selectHtml from './html/select.html';
-import { stringify } from 'querystring';
+import Router from './router';
 
 export default class Select {
-    private socket: SocketIOClient.Socket;
-
-    private html: string;
+    private router: Router;
     private roomMap: Map<string, Room>;
 
-    constructor(socket: SocketIOClient.Socket) {
-        this.socket = socket;
-
-        this.createRoomCtrl();
-
-        this.html = selectHtml;
+    constructor(router: Router, socket: SocketIOClient.Socket) {
+        this.router = router;
         this.roomMap = new Map<string, Room>();
 
-        socket.on('createRoom', (roomId: string) => {
-            this.createRoom(roomId);
-        });
+        this.listeners(socket);
+        this.createRoomCtrl(socket);
     }
 
-    private createRoomCtrl(): void {
+    private createRoomCtrl(socket: SocketIOClient.Socket): void {
+        socket.emit('updateAllInfo', (data: any) => {
+
+        });
+
         $(document).ready(() => {
             $('#createRoom').click(() => {
                 const roomId = $('#roomId').val();
 
-                this.socket.emit('createRoom', roomId, (roomList: Array<string>) => {
-                    const rowList = roomList.map((roomId: string) => {
-                            const tmpRoom: Room = this.roomMap.get(roomId);
-                            return `<tr>
-                                <td>${tmpRoom.roomId}</td>
-                                <td>${tmpRoom.players}/${tmpRoom.capacity}</td>
-                            </tr>`
-                        }).join('');
-
-                    $('#roomList').html(rowList);
+                socket.emit('createRoom', roomId, (data: any) => {
+                    if (!this.roomMap.has(data.roomId)) {
+                        console.log('poop1', data);
+                        this.joinRoom(socket, data.roomId);
+                    }
                 });
             });
 
@@ -46,16 +41,44 @@ export default class Select {
         });
     }
 
-    private createRoom(roomID: string): Room {
-        const newRoom: Room = new Room(roomID, this.socket);
-
-        if (newRoom) {
-            console.log('roomMap', this.roomMap);
-            this.roomMap.set(roomID, newRoom);
-        }
-
-        return newRoom;
+    private joinRoom(socket: SocketIOClient.Socket, roomId: string): void {
+        socket.emit('joinRoom', roomId, (data: any) => {
+            if (data.allowJoin && this.roomMap.has(roomId)) {
+                this.router.changeTemplHtml(this.roomMap.get(roomId).HTML);
+            }
+        });
     }
 
-    public getHTML(): string { return this.html; }
+    private listeners(socket: SocketIOClient.Socket): void {
+        socket.on('updateInfo', (data: any) => {
+            if (!this.roomMap.has(data.roomId)) {
+                this.roomMap.set(
+                    data.roomId,
+                    new Room(
+                        data.roomId,
+                        data.players,
+                        data.capacity,
+                        this.router,
+                        io('/room'),
+                    ),
+                );
+                const rowId: string = 'rowId_' + data.roomId;
+
+                const template = Handlebars.compile($('#selectRoomRow').html());
+                $('#roomListTable').append(template({
+                    rowId: rowId,
+                    roomId: data.roomId,
+                    players: data.players,
+                    capacity: data.capacity,
+                }));
+
+                $(`#${ rowId }>td:last-child>button`).click(() => {
+                    console.log('poop2', data);
+                    this.joinRoom(socket, data.roomId);
+                });
+            }
+        });
+    }
+
+    public get HTML(): string { return selectHtml; }
 }

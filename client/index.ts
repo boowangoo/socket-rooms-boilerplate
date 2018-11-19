@@ -1,26 +1,19 @@
-import $ from 'jquery';
 import io from 'socket.io-client';
 
-import Select from './select'
-
+import Select from './select';
+import Router from './router'; 
 
 class Index {
-    private select: Select;
     private socket: SocketIOClient.Socket;
+    private select: Select;
+    private router: Router;
+
 
     constructor() {
         this.socket = io();
-        this.select = new Select(this.socket);
-
-        this.loadContainer();
-    }
-
-    private loadContainer(): void {
-        $('#container').html(this.select.getHTML());
-    }
-
-    public changeTemplate(html: string): void {
-        $('#container').html(html);
+        this.router = new Router();
+        this.select = new Select(this.router, io('/room-list'));
+        this.router.changeTemplHtml(this.select.HTML);
     }
 }
 
