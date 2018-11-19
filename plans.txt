@@ -1,0 +1,60 @@
+Client:
+  Select:
+    On:
+      "delete-info":
+        remove roomId from list
+      "update-info":
+        go through array, either add or update room info in list
+    Action:
+      Connect:
+        nothing
+      Disconnect:
+        nothing
+      Create Room:
+        emit "create-room" with response
+        Success:
+          (Join Room)
+        Error:
+          display error message (?)
+      Join Room:
+        emit "join-room" with response
+        Success:
+          change from select to room
+        Error:
+          display error message (?)
+  Room:
+    Action:
+      Disconnect:
+          nothing
+      Leave Room:
+        emit "leave-room" with response
+        Success:
+          change from room to select
+        Error:
+          display error message (?)
+  
+
+Server:
+  On:
+    "connection":
+      print("user connected")
+    "disconnection":
+      print("user disconnected")
+    "create-room":
+      check if room exits
+      Success:
+        emit "update-info"
+        callback(roomId)
+      Error:
+        display error message (?)
+    "join-room":
+      check if room exits
+      Success:
+      Error:
+        display error message (?)
+    "leave-room":
+      check if room exists
+      Success:
+      Error:
+        display error message (?)
+  Action:
