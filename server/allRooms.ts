@@ -1,6 +1,6 @@
 import socketIO from 'socket.io'
 import RoomInfo from './roomInfo';
-import { truncateSync } from 'fs';
+// import { truncateSync } from 'fs';
 
 export default class AllRooms {
     private allRoomsNsp: socketIO.Namespace;
@@ -39,8 +39,13 @@ export default class AllRooms {
             });
 
             socket.on('joinRoom', (roomId: string, callback: Function) => {
-                console.log(`id:\t${ roomId }`);
-                callback({ allowJoin: true });
+                if (this.roomMap.has(roomId)) {
+                    callback({
+                        allowJoin: true,
+                        data: this.roomMap.get(roomId),
+                    });
+                }
+                callback({ allowJoin: false, data: null });
             });
 
             socket.on('updateAllInfo', (callback: Function) => {

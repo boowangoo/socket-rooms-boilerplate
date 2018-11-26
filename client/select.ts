@@ -7,15 +7,15 @@ import Room from './room'
 
 import selectHtml from './html/select.html';
 import Router from './router';
-import { RoomData } from '../types';
+import { RoomData, JoinRoomData } from '../types';
 
 export default class Select {
     private socket: SocketIOClient.Socket;
     private router: Router;
     private roomMap: Map<string, Room>;
 
-    constructor(router: Router, socket: SocketIOClient.Socket) {
-        this.socket = socket;
+    constructor(router: Router) {
+        this.socket = io('/room-list');
         this.router = router;
         this.roomMap = new Map<string, Room>();
 
@@ -43,8 +43,8 @@ export default class Select {
     }
 
     private joinRoom(roomId: string): void {
-        this.socket.emit('joinRoom', roomId, (data: any) => {
-            if (data.allowJoin && this.roomMap.has(roomId)) {
+        this.socket.emit('joinRoom', roomId, (data: JoinRoomData) => {
+            if (data.allowJoin) {
                 this.router.changeTemplHtml(this.roomMap.get(roomId).HTML);
             }
         });

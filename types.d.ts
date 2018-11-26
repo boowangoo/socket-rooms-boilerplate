@@ -3,3 +3,8 @@ export interface RoomData {
     players: number;
     capacity: number;
 }
+
+export interface JoinRoomData {
+    allowJoin: boolean;
+    data: RoomData;
+}
