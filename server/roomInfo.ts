@@ -1,3 +1,5 @@
+import { RoomData } from "../types";
+
 export default class RoomInfo {
     private _roomId: string;
     private _players: number;
@@ -13,7 +15,7 @@ export default class RoomInfo {
     public get capacity(): number { return this._capacity; }
     public get players(): number { return this._players; }
 
-    public toMsg(): any {
+    public toMsg(): RoomData {
         return {
             roomId: this.roomId,
             players: this.players,

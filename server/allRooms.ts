@@ -43,17 +43,24 @@ export default class AllRooms {
                 callback({ allowJoin: true });
             });
 
+            socket.on('updateAllInfo', (callback: Function) => {
+                const keys: Array<string> = Array.from(this.roomMap.keys());
+                const rooms: Array<any> = keys.map(
+                    (roomId) => this.roomMap.get(roomId).toMsg()
+                );
+
+                callback(rooms);
+            });
+
             socket.on('disconnect', () => {
                 console.log('user disconnected');
             });
         });
 
-        
-
-        // this.allRoomsNsp.on('get-info', (roomId: string, callback: Function) => {
+        // this.allRoomsNsp.on('get-info',
+        //         (roomId: string, callback: Function) => {
         //     callback(this.roomMap.get(roomId).toMsg());
         // });
-
     }
 
     private createRoom(roomId: string): RoomInfo {
@@ -73,15 +80,4 @@ export default class AllRooms {
     private updateInfo(data: any): void {
         this.allRoomsNsp.emit('updateInfo', data);
     }
-
-    private updateAllInfo(): void {
-        const keys: Array<string> = Array.from(this.roomMap.keys());
-        const rooms: Array<any> = keys.map(
-            (roomId) => this.roomMap.get(roomId).toMsg()
-        );
-        
-        this.allRoomsNsp.emit('update-rooms', rooms);
-    }
-
-    
 }

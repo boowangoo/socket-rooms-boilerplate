@@ -7,76 +7,75 @@ import Room from './room'
 
 import selectHtml from './html/select.html';
 import Router from './router';
+import { RoomData } from '../types';
 
 export default class Select {
+    private socket: SocketIOClient.Socket;
     private router: Router;
     private roomMap: Map<string, Room>;
 
     constructor(router: Router, socket: SocketIOClient.Socket) {
+        this.socket = socket;
         this.router = router;
         this.roomMap = new Map<string, Room>();
 
-        this.listeners(socket);
-        this.createRoomCtrl(socket);
-    }
+        this.socket.emit('updateAllInfo', (data: Array<RoomData>) => {
+            data.map((d: any) => { this.updateInfo(d); });
+        });
 
-    private createRoomCtrl(socket: SocketIOClient.Socket): void {
-        socket.emit('updateAllInfo', (data: any) => {
-
+        this.socket.on('updateInfo', (data: RoomData) => {
+            this.updateInfo(data);
         });
 
         $(document).ready(() => {
             $('#createRoom').click(() => {
-                const roomId = $('#roomId').val();
+                const roomId = $('#roomIdInput').val();
 
-                socket.emit('createRoom', roomId, (data: any) => {
-                    if (!this.roomMap.has(data.roomId)) {
-                        console.log('poop1', data);
-                        this.joinRoom(socket, data.roomId);
+                this.socket.emit('createRoom', roomId, (data: RoomData) => {
+                    if (this.roomMap.has(data.roomId)) {
+                        this.joinRoom(data.roomId);
                     }
                 });
             });
 
-            $('#roomId').val('');
+            $('#roomIdInput').val('');
         });
     }
 
-    private joinRoom(socket: SocketIOClient.Socket, roomId: string): void {
-        socket.emit('joinRoom', roomId, (data: any) => {
+    private joinRoom(roomId: string): void {
+        this.socket.emit('joinRoom', roomId, (data: any) => {
             if (data.allowJoin && this.roomMap.has(roomId)) {
                 this.router.changeTemplHtml(this.roomMap.get(roomId).HTML);
             }
         });
     }
 
-    private listeners(socket: SocketIOClient.Socket): void {
-        socket.on('updateInfo', (data: any) => {
-            if (!this.roomMap.has(data.roomId)) {
-                this.roomMap.set(
-                    data.roomId,
-                    new Room(
-                        data.roomId,
-                        data.players,
-                        data.capacity,
-                        this.router,
-                        io('/room'),
-                    ),
-                );
-                const rowId: string = 'rowId_' + data.roomId;
+    private updateInfo(data: RoomData): void {
+        if (this.roomMap.has(data.roomId)) { return; }
 
-                const template = Handlebars.compile($('#selectRoomRow').html());
-                $('#roomListTable').append(template({
-                    rowId: rowId,
-                    roomId: data.roomId,
-                    players: data.players,
-                    capacity: data.capacity,
-                }));
+        this.roomMap.set(
+            data.roomId,
+            new Room(
+                data.roomId,
+                data.players,
+                data.capacity,
+                this.router,
+                io('/room'),
+            ),
+        );
+        const rowId: string = 'rowId_' + data.roomId;
 
-                $(`#${ rowId }>td:last-child>button`).click(() => {
-                    console.log('poop2', data);
-                    this.joinRoom(socket, data.roomId);
-                });
-            }
+        const template = Handlebars.compile($('#selectRoomRow').html());
+        $('#roomListTable').append(template({
+            rowId: rowId,
+            roomId: data.roomId,
+            players: data.players,
+            capacity: data.capacity,
+        }));
+
+        $(`#${rowId}>td:last-child>button`).click(() => {
+            console.log('poop2', data);
+            this.joinRoom(data.roomId);
         });
     }
 
