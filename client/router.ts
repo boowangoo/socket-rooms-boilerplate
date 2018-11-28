@@ -1,15 +1,16 @@
 import $ from 'jquery';
 
 import Room from './room';
+import { Html } from '../types';
 
 export default class Router {
-    private templHtml: string;
+    private templHtml: Html;
 
-    constructor(html?: string) {
+    constructor(html?: Html) {
         this.changeTemplHtml(html || 'no template html');
     }
 
-    public changeTemplHtml(html: string): void {
+    public changeTemplHtml(html: Html): void {
         this.templHtml = html;
         $('#container').html(this.templHtml);
     }

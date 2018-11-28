@@ -1,19 +1,20 @@
 import socketIO from 'socket.io'
 import RoomInfo from './roomInfo';
+import { ID, RoomData } from '../types';
 // import { truncateSync } from 'fs';
 
 export default class AllRooms {
     private allRoomsNsp: socketIO.Namespace;
-    private roomMap: Map<string, RoomInfo>;
+    private roomMap: Map<ID, RoomInfo>;
 
     constructor(nsp: socketIO.Namespace) {
         this.allRoomsNsp = nsp;
-        this.roomMap = new Map<string, RoomInfo>();
+        this.roomMap = new Map<ID, RoomInfo>();
 
         this.allRoomsNsp.on('connection', (socket: socketIO.Socket) => {
             console.log('a user connected');
 
-            socket.on('createRoom', (roomId: string, callback: Function) => {
+            socket.on('createRoom', (roomId: ID, callback: Function) => {
                 let room: RoomInfo;
 
                 if (this.roomMap.has(roomId)) {
@@ -38,7 +39,7 @@ export default class AllRooms {
                 callback({ created: false });
             });
 
-            socket.on('joinRoom', (roomId: string, callback: Function) => {
+            socket.on('joinRoom', (roomId: ID, callback: Function) => {
                 if (this.roomMap.has(roomId)) {
                     callback({
                         allowJoin: true,
@@ -49,8 +50,8 @@ export default class AllRooms {
             });
 
             socket.on('updateAllInfo', (callback: Function) => {
-                const keys: Array<string> = Array.from(this.roomMap.keys());
-                const rooms: Array<any> = keys.map(
+                const keys: Array<ID> = Array.from(this.roomMap.keys());
+                const rooms: Array<RoomData> = keys.map(
                     (roomId) => this.roomMap.get(roomId).toMsg()
                 );
 
@@ -63,12 +64,12 @@ export default class AllRooms {
         });
 
         // this.allRoomsNsp.on('get-info',
-        //         (roomId: string, callback: Function) => {
+        //         (roomId: ID, callback: Function) => {
         //     callback(this.roomMap.get(roomId).toMsg());
         // });
     }
 
-    private createRoom(roomId: string): RoomInfo {
+    private createRoom(roomId: ID): RoomInfo {
         if (!this.roomMap.has(roomId)) {
             const room: RoomInfo = new RoomInfo(roomId); 
             this.roomMap.set(roomId, room);
@@ -78,11 +79,11 @@ export default class AllRooms {
         return null;
     }
 
-    private deleteInfo(roomId: string): void {
+    private deleteInfo(roomId: ID): void {
         this.allRoomsNsp.emit('delete-rooms', roomId);
     }
 
-    private updateInfo(data: any): void {
+    private updateInfo(data: RoomData): void {
         this.allRoomsNsp.emit('updateInfo', data);
     }
 }

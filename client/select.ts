@@ -7,20 +7,20 @@ import Room from './room'
 
 import selectHtml from './html/select.html';
 import Router from './router';
-import { RoomData, JoinRoomData } from '../types';
+import { RoomData, JoinRoomData, ID } from '../types';
 
 export default class Select {
     private socket: SocketIOClient.Socket;
     private router: Router;
-    private roomMap: Map<string, Room>;
+    private roomMap: Map<ID, Room>;
 
     constructor(router: Router) {
         this.socket = io('/room-list');
         this.router = router;
-        this.roomMap = new Map<string, Room>();
+        this.roomMap = new Map<ID, Room>();
 
         this.socket.emit('updateAllInfo', (data: Array<RoomData>) => {
-            data.map((d: any) => { this.updateInfo(d); });
+            data.map((d: RoomData) => { this.updateInfo(d); });
         });
 
         this.socket.on('updateInfo', (data: RoomData) => {
@@ -42,7 +42,7 @@ export default class Select {
         });
     }
 
-    private joinRoom(roomId: string): void {
+    private joinRoom(roomId: ID): void {
         this.socket.emit('joinRoom', roomId, (data: JoinRoomData) => {
             if (data.allowJoin) {
                 this.router.changeTemplHtml(this.roomMap.get(roomId).HTML);
@@ -63,7 +63,7 @@ export default class Select {
                 io('/room'),
             ),
         );
-        const rowId: string = 'rowId_' + data.roomId;
+        const rowId: ID = 'rowId_' + data.roomId;
 
         const template = Handlebars.compile($('#selectRoomRow').html());
         $('#roomListTable').append(template({
@@ -79,5 +79,5 @@ export default class Select {
         });
     }
 
-    public get HTML(): string { return selectHtml; }
+    public get HTML(): ID { return selectHtml; }
 }
