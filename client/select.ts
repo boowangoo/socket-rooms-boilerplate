@@ -7,11 +7,7 @@ import Room from './room'
 
 import selectHtml from './html/select.html';
 import Router from './router';
-<<<<<<< HEAD
 import { RoomData, JoinRoomData, ID } from '../types';
-=======
-import { RoomData } from '../types';
->>>>>>> parent of 5083ab7... select.ts now initiates socket in its constructor rather than in index.ts
 
 export default class Select {
     private socket: SocketIOClient.Socket;
@@ -46,15 +42,9 @@ export default class Select {
         });
     }
 
-<<<<<<< HEAD
     private joinRoom(roomId: ID): void {
         this.socket.emit('joinRoom', roomId, (data: JoinRoomData) => {
             if (data.allowJoin) {
-=======
-    private joinRoom(roomId: string): void {
-        this.socket.emit('joinRoom', roomId, (data: any) => {
-            if (data.allowJoin && this.roomMap.has(roomId)) {
->>>>>>> parent of 5083ab7... select.ts now initiates socket in its constructor rather than in index.ts
                 this.router.changeTemplHtml(this.roomMap.get(roomId).HTML);
             }
         });
@@ -89,10 +79,5 @@ export default class Select {
         });
     }
 
-<<<<<<< HEAD
     public get HTML(): ID { return selectHtml; }
 }
-=======
-    public get HTML(): string { return selectHtml; }
-}
->>>>>>> parent of 5083ab7... select.ts now initiates socket in its constructor rather than in index.ts
