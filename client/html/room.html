@@ -1,14 +1,13 @@
-
-<!-- <script id="roomInfo" type="text/x-handlebars-template"> -->
-  <table>
-    <tr>
-      <td>Room ID</td>
-      <td>{{ roomId }}</td>
-    </tr>
-    <tr>
-      <td>Room Capacity</td>
-      <td>{{ players }}/{{ capacity }}</td>
-    </tr>
-  </table>
-  <button id="leaveRoom" type="button">Back</button>
-<!-- </script> -->
+<table>
+  <tr>
+    <td>Room ID</td>
+    <td id="roomId">{{ roomId }}</td>
+  </tr>
+  <tr>
+    <td>Room Capacity</td>
+    <td id="roomCapacity"></td>
+  </tr>
+</table>
+<p id="msgBox"></p>
+<button id="wave" type="button">Wave</button>
+<button id="leaveRoom" type="button">Back</button>

@@ -1,6 +1,6 @@
 import socketIO from 'socket.io'
 import RoomInfo from './roomInfo';
-import { ID, RoomData } from '../types';
+import { ID, RoomData, JoinRoomData, LeaveRoomData } from '../types';
 // import { truncateSync } from 'fs';
 
 export default class AllRooms {
@@ -16,64 +16,64 @@ export default class AllRooms {
 
             socket.on('createRoom', (roomId: ID, callback: Function) => {
                 let room: RoomInfo;
+                let roomData: RoomData = null;
 
-                if (this.roomMap.has(roomId)) {
-                    room = this.roomMap.get(roomId);
-                    console.log(`room ${ roomId } created`);
-                } else {
+                if (!this.roomMap.has(roomId)) {
                     room = this.createRoom(roomId);
-                    this.roomMap.set(roomId, room);
+                    console.log(`room ${ roomId } created`);
+                    roomData = room.toMsg();
                 }
-    
-                if (room) {
-                    const data = {
-                        created: true,
-                        roomId: room.roomId,
-                        players: room.players,
-                        capacity: room.capacity,
-                    };
-
-                    this.updateInfo(data);
-                    callback(data);
-                }
-                callback({ created: false });
+                callback({ created: !!roomData, data: roomData });
             });
 
             socket.on('joinRoom', (roomId: ID, callback: Function) => {
+                let updatedRoom: RoomInfo = null;
                 if (this.roomMap.has(roomId)) {
-                    callback({
-                        allowJoin: true,
-                        data: this.roomMap.get(roomId).toMsg(),
-                    });
+                    updatedRoom = this.roomMap.get(roomId).incrPlayers();
                 }
-                callback({ allowJoin: false, data: null });
+                callback({
+                    allowJoin: !!updatedRoom,
+                    data: updatedRoom ? updatedRoom.toMsg() : null,
+                });
+            });
+
+            socket.on('leaveRoom', (roomId: ID, callback: Function) => {
+                let updatedRoom: RoomInfo = null;
+                if (this.roomMap.has(roomId)) {
+                    updatedRoom = this.roomMap.get(roomId).decrPlayers();
+                }
+                callback({
+                    allowJoin: !!updatedRoom,
+                    data: updatedRoom ? updatedRoom.toMsg() : null,
+                });
+            });
+
+            socket.on('updateInfo', (roomId: ID, callback: Function) => {
+                let room: RoomInfo = null;
+                if (this.roomMap.has(roomId)) {
+                    room = this.roomMap.get(roomId);
+                }
+                callback(room);
             });
 
             socket.on('updateAllInfo', (callback: Function) => {
                 const keys: Array<ID> = Array.from(this.roomMap.keys());
-                const rooms: Array<RoomData> = keys.map(
+                const roomsData: Array<RoomData> = keys.map(
                     (roomId) => this.roomMap.get(roomId).toMsg()
                 );
-
-                callback(rooms);
+                callback(roomsData);
             });
 
             socket.on('disconnect', () => {
                 console.log('user disconnected');
             });
         });
-
-        // this.allRoomsNsp.on('get-info',
-        //         (roomId: ID, callback: Function) => {
-        //     callback(this.roomMap.get(roomId).toMsg());
-        // });
     }
 
     private createRoom(roomId: ID): RoomInfo {
         if (!this.roomMap.has(roomId)) {
             const room: RoomInfo = new RoomInfo(roomId); 
             this.roomMap.set(roomId, room);
-
             return room;
         }
         return null;

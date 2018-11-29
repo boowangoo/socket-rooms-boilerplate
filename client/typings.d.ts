@@ -1,6 +1,6 @@
-import { Html } from "../types";
+// import { Html } from "../types";
 
 declare module '*html' {
-    const content: Html;
+    const content: string;
     export default content;
 }

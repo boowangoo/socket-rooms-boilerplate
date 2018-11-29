@@ -11,6 +11,21 @@ export default class RoomInfo {
         this._players = 0;
     }
 
+    public incrPlayers(): RoomInfo {
+        if (this._players + 1 > this._capacity) {
+            return null;
+        }
+        this._players++;
+        return this;
+    }
+    public decrPlayers(): RoomInfo {
+        if (this._players - 1 < 0) {
+            return null;
+        }
+        this._players--;
+        return this;
+    }
+
     public get roomId(): ID { return this._roomId; }
     public get capacity(): number { return this._capacity; }
     public get players(): number { return this._players; }

@@ -8,6 +8,7 @@ import { Html, RoomData, ID }  from '../types';
 
 export default class Room {
     private router: Router;
+    private socket: SocketIOClient.Socket;
 
     private _roomId: ID;
     private _players: number;
@@ -20,36 +21,43 @@ export default class Room {
         this._roomId = roomId;
         this._players = players;
         this._capacity = capacity;
+        this.router = router;
+        this.socket = socket;
+    }
 
-        const template = Handlebars.compile(roomHtml);
-
-        this.roomTemplate = template({
-            roomId: roomId,
-            players: players,
-            capacity: capacity,
-        });
+    public initDOM(): Room {
+        this.update(this.socket);
 
         $(document).ready(() => {
             $('#leaveRoom').click(() => {
-                console.log('leaving room');
                 this.leaveRoom();
             });
-        });
-    }
 
-    private initDOM(): Room {
+            $('#wave').click(() => {
+                this.wave();
+            });
+        });
         return this;
     }
     
     private leaveRoom(): void {
         this.router.changeTemplHtml(selectHtml);
     }
+    
+    private wave(): void {
+        console.log('wave');
+    }
 
     private update(socket: SocketIOClient.Socket): void {
-        socket.emit('getRoomInfo', this.roomId, (data: RoomData) => {
-            console.log(data);
-            this._players = data.players;
-            this._capacity = data.capacity;
+        socket.emit('updateInfo', this.roomId, (data: RoomData) => {
+            if (data) {
+                this._players = data.players;
+                this._capacity = data.capacity;
+                $('#roomId').html(this.roomId);
+                $('#roomCapacity').html(this.players + '/' + this.capacity);
+            } else {
+                // update failed
+            }
         });
     }
 
@@ -57,8 +65,5 @@ export default class Room {
     public get players(): number { return this._players; }
     public get capacity(): number { return this._capacity; }
 
-    public get HTML(): Html {
-        console.log(this.roomTemplate);
-        return this.roomTemplate;
-    }
+    public get HTML(): Html { return roomHtml; }
 }

@@ -7,7 +7,7 @@ import Room from './room'
 
 import selectHtml from './html/select.html';
 import Router from './router';
-import { RoomData, JoinRoomData, ID } from '../types';
+import { RoomData, JoinRoomData, ID, CreateRoomData } from '../types';
 
 export default class Select {
     private socket: SocketIOClient.Socket;
@@ -31,9 +31,12 @@ export default class Select {
             $('#createRoom').click(() => {
                 const roomId = $('#roomIdInput').val();
 
-                this.socket.emit('createRoom', roomId, (data: RoomData) => {
-                    if (this.roomMap.has(data.roomId)) {
-                        this.joinRoom(data.roomId);
+                this.socket.emit('createRoom', roomId, (data: CreateRoomData) => {
+                    if (data.created) {
+                        this.updateInfo(data.data);
+                        this.joinRoom(data.data.roomId);
+                    } else if (!data.created) {
+                        // room not created
                     }
                 });
             });
@@ -45,7 +48,9 @@ export default class Select {
     private joinRoom(roomId: ID): void {
         this.socket.emit('joinRoom', roomId, (data: JoinRoomData) => {
             if (data.allowJoin) {
-                this.router.changeTemplHtml(this.roomMap.get(roomId).HTML);
+                const room: Room = this.roomMap.get(roomId);
+                this.router.changeTemplHtml(room.HTML);
+                room.initDOM();
             }
         });
     }
