@@ -1,7 +1,11 @@
 import socketIO from 'socket.io'
 import RoomInfo from './roomInfo';
+<<<<<<< HEAD
 import { ID, RoomData } from '../types';
 // import { truncateSync } from 'fs';
+=======
+import { truncateSync } from 'fs';
+>>>>>>> parent of 5083ab7... select.ts now initiates socket in its constructor rather than in index.ts
 
 export default class AllRooms {
     private allRoomsNsp: socketIO.Namespace;
@@ -39,6 +43,7 @@ export default class AllRooms {
                 callback({ created: false });
             });
 
+<<<<<<< HEAD
             socket.on('joinRoom', (roomId: ID, callback: Function) => {
                 if (this.roomMap.has(roomId)) {
                     callback({
@@ -47,6 +52,11 @@ export default class AllRooms {
                     });
                 }
                 callback({ allowJoin: false, data: null });
+=======
+            socket.on('joinRoom', (roomId: string, callback: Function) => {
+                console.log(`id:\t${ roomId }`);
+                callback({ allowJoin: true });
+>>>>>>> parent of 5083ab7... select.ts now initiates socket in its constructor rather than in index.ts
             });
 
             socket.on('updateAllInfo', (callback: Function) => {
