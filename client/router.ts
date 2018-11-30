@@ -2,16 +2,14 @@ import $ from 'jquery';
 
 import Room from './room';
 import { Html } from '../types';
+import Page from './page';
 
 export default class Router {
-    private templHtml: Html;
+    private currPage: Page;
 
-    constructor(html?: Html) {
-        this.changeTemplHtml(html || 'no template html');
-    }
-
-    public changeTemplHtml(html: Html): void {
-        this.templHtml = html;
-        $('#container').html(this.templHtml);
+    public changePage(page: Page): void {
+        this.currPage = page;
+        $('#container').html(page.HTML());
+        page.init();
     }
 }

@@ -4,11 +4,13 @@ import Handlebars from 'handlebars';
 
 import Router from './router';
 import Room from './room'
-import { RoomData, ID } from '../types';
+import { RoomData, ID, Html } from '../types';
 
 import selectHtml from './html/select.html';
+import Page from './page';
 
-export default class Select {
+export default class Select implements Page {
+    
     private socket: SocketIOClient.Socket;
     private router: Router;
     private roomMap: Map<ID, Room>;
@@ -17,20 +19,19 @@ export default class Select {
         this.socket = socket;
         this.router = router;
         this.roomMap = new Map<ID, Room>();
+    }
 
-        this.socket.emit('updateAllInfo', (data: Array<RoomData>) => {
-            data.map((d: RoomData) => { this.updateInfo(d); });
-        });
-
+    public init(): void {
+        
         this.socket.on('updateInfo', (data: RoomData) => {
             this.updateInfo(data);
         });
-
+        
         $(document).ready(() => {
             $('#createRoom').click(() => {
                 $('#createRoomStatus').html('');
                 const roomId = (<string>$('#roomIdInput').val())
-                        .replace(/\s/g, '_');
+                .replace(/\s/g, '_');
 
                 this.socket.emit('createRoom', roomId, (data: RoomData) => {
                     if (data) {
@@ -40,8 +41,12 @@ export default class Select {
                     }
                 });
             });
-
+            
             $('#roomIdInput').val('');
+            
+            this.socket.emit('updateAllInfo', (data: Array<RoomData>) => {
+                data.map((d: RoomData) => { this.updateInfo(d); });
+            });
         });
     }
 
@@ -49,43 +54,41 @@ export default class Select {
         this.socket.emit('joinRoom', roomId, (data: RoomData) => {
             if (data) {
                 const room: Room = this.roomMap.get(roomId);
-                this.router.changeTemplHtml(room.HTML);
-                room.initDOM();
+                this.router.changePage(room);
             }
         });
     }
 
     private deleteRoom(roomId: ID): void {
-        this.socket.emit('joinRoom', roomId, (data: RoomData) => {
-            if (data) {
-                const room: Room = this.roomMap.get(roomId);
-                this.router.changeTemplHtml(room.HTML);
-                room.initDOM();
-            }
-        });
     }
 
     private updateInfo(data: RoomData): void {
         const rowId: ID = data.roomId;
 
+        if (!$(`#${rowId}`).length) { // if the row exists in the DOM
+            this.appendRow(rowId, data);
+        }
+
         if (this.roomMap.has(data.roomId)) {
             const room = this.roomMap.get(data.roomId);
             $(`#${rowId}_roomID`).html(data.roomId);
             $(`#${rowId}_roomCapacity`).html(`${data.players}/${data.capacity}`);
-            return;
-        }
-
-        this.roomMap.set(
-            data.roomId,
-            new Room(
+        } else {
+            this.roomMap.set(
                 data.roomId,
-                data.players,
-                data.capacity,
-                this.router,
-                io('/room'),
-            ),
-        );
+                new Room(
+                    data.roomId,
+                    data.players,
+                    data.capacity,
+                    this.router,
+                    io('/room'),
+                    this,
+                ),
+            );
+        }
+    }
 
+    private appendRow(rowId: ID, data: RoomData): void {
         const template = Handlebars.compile($('#selectRoomRow').html());
         $('#roomListTable').append(template({
             rowId: rowId,
@@ -97,11 +100,11 @@ export default class Select {
         $(`#${rowId}_joinBtn`).click(() => {
             this.joinRoom(data.roomId);
         });
-        
+
         $(`#${rowId}_deleteBtn`).click(() => {
             this.deleteRoom(data.roomId);
         });
     }
 
-    public get HTML(): ID { return selectHtml; }
+    public HTML(): Html { return selectHtml; }
 }

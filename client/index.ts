@@ -13,7 +13,7 @@ class Index {
         this.socket = io();
         this.router = new Router();
         this.select = new Select(this.router, io('/select'));
-        this.router.changeTemplHtml(this.select.HTML);
+        this.router.changePage(this.select);
     }
 }
 

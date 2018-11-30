@@ -10,17 +10,27 @@ export default class RoomSockets {
         this.roomNsp = nsp;
 
         this.roomNsp.on('connection', (socket: socketIO.Socket) => {
+            socket.on('joinRoom', (roomId: ID) => {
+                console.log(socket.id + ' has joined room ' + roomId);
+                socket.join(roomId)
+            });
+
             socket.on('updateInfo', (roomId: ID) => {
                 this.updateInfo(roomId, db);
+            });
+
+            socket.on('wave', (roomId: ID) => {
+                this.roomNsp.in(roomId).emit('updateWave', socket.id);
             });
         });
     }
 
-    private updateInfo(roomID: ID, db: RoomDB) {
+    private updateInfo(roomId: ID, db: RoomDB) {
         let data: RoomData = null;
-        if (db.roomMap.has(roomID)) {
-            data = db.roomMap.get(roomID).toMsg();
+        if (db.roomMap.has(roomId)) {
+            data = db.roomMap.get(roomId).toMsg();
         }
-        this.roomNsp.in(roomID).emit('updateInfo', data);
+        console.log(this.roomNsp);
+        this.roomNsp.in(roomId).emit('updateInfo', data);
     }
 }

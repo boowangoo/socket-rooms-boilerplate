@@ -10,7 +10,7 @@
 <table id="roomListTable"></table>
 
 <script id="selectRoomRow" type="text/x-handlebars-template">
-  <tr>
+  <tr id="{{ rowId }}">
     <td id="{{ rowId }}_roomID">{{ roomId }}</td>
     <td id="{{ rowId }}_roomCapacity">{{ players }}/{{ capacity }}</td>
     <td id="{{ rowId }}_joinBtn"><button type="button">Join</button></td>

@@ -25,8 +25,11 @@ export default class SelectSockets {
             socket.on('joinRoom', (roomId: ID, callback: Function) => {
                 let data: RoomData = null;
                 if (db.roomMap.has(roomId)) {
-                    data = db.roomMap.get(roomId).incrPlayers().toMsg();
-                    this.updateInfo(data);
+                    const roomInfo = db.roomMap.get(roomId).incrPlayers();
+                    if (roomInfo) {
+                        data = roomInfo.toMsg();
+                        this.updateInfo(data);
+                    }
                 }
                 callback(data);
             });
