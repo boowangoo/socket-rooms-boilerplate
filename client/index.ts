@@ -12,7 +12,7 @@ class Index {
     constructor() {
         this.socket = io();
         this.router = new Router();
-        this.select = new Select(this.router, io('/room-list'));
+        this.select = new Select(this.router, io('/select'));
         this.router.changeTemplHtml(this.select.HTML);
     }
 }

@@ -1,13 +1,12 @@
 import $ from 'jquery';
 import io from 'socket.io-client';
 import Handlebars from 'handlebars';
-import { stringify } from 'querystring';
 
+import Router from './router';
 import Room from './room'
+import { RoomData, ID } from '../types';
 
 import selectHtml from './html/select.html';
-import Router from './router';
-import { RoomData, JoinRoomData, ID, CreateRoomData } from '../types';
 
 export default class Select {
     private socket: SocketIOClient.Socket;
@@ -29,14 +28,15 @@ export default class Select {
 
         $(document).ready(() => {
             $('#createRoom').click(() => {
-                const roomId = $('#roomIdInput').val();
+                $('#createRoomStatus').html('');
+                const roomId = (<string>$('#roomIdInput').val())
+                        .replace(/\s/g, '_');
 
-                this.socket.emit('createRoom', roomId, (data: CreateRoomData) => {
-                    if (data.created) {
-                        this.updateInfo(data.data);
-                        this.joinRoom(data.data.roomId);
-                    } else if (!data.created) {
-                        // room not created
+                this.socket.emit('createRoom', roomId, (data: RoomData) => {
+                    if (data) {
+                        this.joinRoom(data.roomId);
+                    } else {
+                        $('#createRoomStatus').html('room not created');
                     }
                 });
             });
@@ -46,8 +46,18 @@ export default class Select {
     }
 
     private joinRoom(roomId: ID): void {
-        this.socket.emit('joinRoom', roomId, (data: JoinRoomData) => {
-            if (data.allowJoin) {
+        this.socket.emit('joinRoom', roomId, (data: RoomData) => {
+            if (data) {
+                const room: Room = this.roomMap.get(roomId);
+                this.router.changeTemplHtml(room.HTML);
+                room.initDOM();
+            }
+        });
+    }
+
+    private deleteRoom(roomId: ID): void {
+        this.socket.emit('joinRoom', roomId, (data: RoomData) => {
+            if (data) {
                 const room: Room = this.roomMap.get(roomId);
                 this.router.changeTemplHtml(room.HTML);
                 room.initDOM();
@@ -56,7 +66,14 @@ export default class Select {
     }
 
     private updateInfo(data: RoomData): void {
-        if (this.roomMap.has(data.roomId)) { return; }
+        const rowId: ID = data.roomId;
+
+        if (this.roomMap.has(data.roomId)) {
+            const room = this.roomMap.get(data.roomId);
+            $(`#${rowId}_roomID`).html(data.roomId);
+            $(`#${rowId}_roomCapacity`).html(`${data.players}/${data.capacity}`);
+            return;
+        }
 
         this.roomMap.set(
             data.roomId,
@@ -68,7 +85,6 @@ export default class Select {
                 io('/room'),
             ),
         );
-        const rowId: ID = 'rowId_' + data.roomId;
 
         const template = Handlebars.compile($('#selectRoomRow').html());
         $('#roomListTable').append(template({
@@ -78,9 +94,12 @@ export default class Select {
             capacity: data.capacity,
         }));
 
-        $(`#${rowId}>td:last-child>button`).click(() => {
-            console.log('poop2', data);
+        $(`#${rowId}_joinBtn`).click(() => {
             this.joinRoom(data.roomId);
+        });
+        
+        $(`#${rowId}_deleteBtn`).click(() => {
+            this.deleteRoom(data.roomId);
         });
     }
 

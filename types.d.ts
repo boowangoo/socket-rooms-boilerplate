@@ -6,18 +6,3 @@ export interface RoomData {
     players: number;
     capacity: number;
 }
-
-export interface CreateRoomData {
-    created: boolean;
-    data: RoomData;
-}
-
-export interface JoinRoomData {
-    allowJoin: boolean;
-    data: RoomData;
-}
-
-export interface LeaveRoomData {
-    allowLeave: boolean;
-    data: RoomData;
-}

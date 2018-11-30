@@ -1,5 +1,4 @@
 import $ from 'jquery';
-import Handlebars from 'handlebars';
 
 import roomHtml from './html/room.html';
 import selectHtml from './html/select.html';
@@ -23,6 +22,17 @@ export default class Room {
         this._capacity = capacity;
         this.router = router;
         this.socket = socket;
+
+        this.socket.on('updateInfo', (data: RoomData) => {
+            if (data) {
+                this._players = data.players;
+                this._capacity = data.capacity;
+                $('#roomId').html(this.roomId);
+                $('#roomCapacity').html(this.players + '/' + this.capacity);
+            } else {
+                // update failed
+            }
+        });
     }
 
     public initDOM(): Room {
@@ -37,6 +47,18 @@ export default class Room {
                 this.wave();
             });
         });
+
+        this.socket.on('updateInfo', (data: RoomData) => {
+            if (data) {
+                this._players = data.players;
+                this._capacity = data.capacity;
+                $('#roomId').html(this.roomId);
+                $('#roomCapacity').html(this.players + '/' + this.capacity);
+            } else {
+                // update failed
+            }
+        });
+        
         return this;
     }
     
