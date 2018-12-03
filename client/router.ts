@@ -1,9 +1,9 @@
+import { injectable } from 'inversify';
 import $ from 'jquery';
 
-import Room from './room';
-import { Html } from '../types';
 import Page from './page';
 
+@injectable()
 export default class Router {
     private currPage: Page;
 

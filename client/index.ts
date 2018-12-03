@@ -1,20 +1,13 @@
 import io from 'socket.io-client';
 
-import Select from './select';
+import 'reflect-metadata';
+
 import Router from './router'; 
+import Select from './select';
 
-class Index {
-    private socket: SocketIOClient.Socket;
-    private select: Select;
-    private router: Router;
+import container from './config/iocConfig';
 
-
-    constructor() {
-        this.socket = io();
-        this.router = new Router();
-        this.select = new Select(this.router, io('/select'));
-        this.router.changePage(this.select);
-    }
-}
-
-const index = new Index();
+const socket = io();
+const router = container.resolve<Router>(Router);
+const select = container.resolve<Select>(Select);
+router.changePage(select);

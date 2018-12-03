@@ -8,23 +8,27 @@ import { RoomData, ID, Html } from '../types';
 
 import selectHtml from './html/select.html';
 import Page from './page';
+import { inject, injectable } from 'inversify';
 
+@injectable()
 export default class Select implements Page {
-    
     private socket: SocketIOClient.Socket;
     private router: Router;
     private roomMap: Map<ID, Room>;
 
-    constructor(router: Router, socket: SocketIOClient.Socket) {
-        this.socket = socket;
+    constructor(@inject(Router) router: Router) {
+        this.socket = io('/select');
         this.router = router;
         this.roomMap = new Map<ID, Room>();
     }
 
     public init(): void {
-        
         this.socket.on('updateInfo', (data: RoomData) => {
             this.updateInfo(data);
+        });
+        
+        this.socket.on('deleteInfo', (data: RoomData) => {
+            this.deleteInfo(data);
         });
         
         $(document).ready(() => {
@@ -50,44 +54,6 @@ export default class Select implements Page {
         });
     }
 
-    private joinRoom(roomId: ID): void {
-        this.socket.emit('joinRoom', roomId, (data: RoomData) => {
-            if (data) {
-                const room: Room = this.roomMap.get(roomId);
-                this.router.changePage(room);
-            }
-        });
-    }
-
-    private deleteRoom(roomId: ID): void {
-    }
-
-    private updateInfo(data: RoomData): void {
-        const rowId: ID = data.roomId;
-
-        if (!$(`#${rowId}`).length) { // if the row exists in the DOM
-            this.appendRow(rowId, data);
-        }
-
-        if (this.roomMap.has(data.roomId)) {
-            const room = this.roomMap.get(data.roomId);
-            $(`#${rowId}_roomID`).html(data.roomId);
-            $(`#${rowId}_roomCapacity`).html(`${data.players}/${data.capacity}`);
-        } else {
-            this.roomMap.set(
-                data.roomId,
-                new Room(
-                    data.roomId,
-                    data.players,
-                    data.capacity,
-                    this.router,
-                    io('/room'),
-                    this,
-                ),
-            );
-        }
-    }
-
     private appendRow(rowId: ID, data: RoomData): void {
         const template = Handlebars.compile($('#selectRoomRow').html());
         $('#roomListTable').append(template({
@@ -104,6 +70,46 @@ export default class Select implements Page {
         $(`#${rowId}_deleteBtn`).click(() => {
             this.deleteRoom(data.roomId);
         });
+    }
+
+    private joinRoom(roomId: ID): void {
+        this.socket.emit('joinRoom', roomId, (data: RoomData) => {
+            if (data) {
+                const room: Room = this.roomMap.get(roomId);
+                this.router.changePage(room);
+            }
+        });
+    }
+
+    private deleteRoom(roomId: ID): void {
+        this.socket.emit('deleteRoom', roomId);
+    }
+
+    private deleteInfo(data: RoomData): void {
+        const rowId: ID = data.roomId;
+        if (!$(`#${rowId}`).length) { // if the row exists in the DOM
+            $(`#${rowId}`).remove();
+        }
+        this.roomMap.delete(data.roomId);
+    }
+
+    private updateInfo(data: RoomData): void {
+        const rowId: ID = data.roomId;
+
+        if (!$(`#${rowId}`).length) { // if the row exists in the DOM
+            this.appendRow(rowId, data);
+        }
+
+        if (this.roomMap.has(data.roomId)) {
+            const room = this.roomMap.get(data.roomId);
+            $(`#${rowId}_roomID`).html(data.roomId);
+            $(`#${rowId}_roomCapacity`).html(`${data.players}/${data.capacity}`);
+        } else {
+            this.roomMap.set(
+                data.roomId,
+                new Room(data.roomId, data.players, data.capacity, this, this.router),
+            );
+        }
     }
 
     public HTML(): Html { return selectHtml; }

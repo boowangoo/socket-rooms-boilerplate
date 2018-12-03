@@ -1,11 +1,13 @@
 import $ from 'jquery';
+import io from 'socket.io-client';
 
-import roomHtml from './html/room.html';
-import selectHtml from './html/select.html';
 import Router from './router';
 import { Html, RoomData, ID }  from '../types';
 import Page from './page';
 import Select from './select';
+
+import roomHtml from './html/room.html';
+import container from './config/iocConfig';
 
 export default class Room implements Page {
     private router: Router;
@@ -17,13 +19,13 @@ export default class Room implements Page {
 
     private selectPage: Select;
 
-    constructor(roomId: ID, players: number, capacity: number,
-            router: Router, socket: SocketIOClient.Socket, selectPage: Select) {
+    constructor(roomId: ID, players: number, capacity: number, selectPage: Select, router: Router) {
         this._roomId = roomId;
         this._players = players;
         this._capacity = capacity;
+
+        this.socket = io('/room');
         this.router = router;
-        this.socket = socket;
         this.selectPage = selectPage;
     }
 
@@ -36,7 +38,7 @@ export default class Room implements Page {
             });
             
             $('#wave').click(() => {
-                this.wave();
+                this.socket.emit('wave', this.roomId);
             });
         });
 
@@ -55,20 +57,19 @@ export default class Room implements Page {
             $('#waveMsgBox').html(playerID + ' waved!');
         });
 
-
-        this.update();
-    }
-    
-    private leaveRoom(): void {
-        this.router.changePage(this.selectPage);
-    }
-    
-    private wave(): void {
-        this.socket.emit('wave', this.roomId);
-    }
-
-    private update(): void {
         this.socket.emit('updateInfo', this.roomId);
+    }
+
+    public leaveRoom(): void {
+        this.socket.emit('leaveRoom', this.roomId, (data: RoomData) => {
+            if (data) {
+                this.delete();
+            }
+        });
+    }
+
+    public delete(): void {
+        this.router.changePage(this.selectPage);
     }
 
     public get roomId(): ID { return this._roomId; }

@@ -8,7 +8,7 @@ export class SocketConnection {
     constructor(io: socketIO.Server) {
         const db = new RoomDB();
         const selectSockets = new SelectSockets(io.of('/select'), db);
-        const roomSockets = new RoomSockets(io.of('/room'), db);
+        const roomSockets = new RoomSockets(io.of('/room'), db, selectSockets);
 
         io.on('connect', (socket: SocketIO.Socket) => {
             console.log(socket.id + ' connected');

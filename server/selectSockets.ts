@@ -15,9 +15,11 @@ export default class SelectSockets {
                 let data: RoomData = null;
                 if (!db.roomMap.has(roomId)) {
                     const room = this.createRoom(roomId, db);
-                    console.log(`room ${ roomId } created`);
-                    data = room.toMsg();
-                    this.updateInfo(data);
+                    if (room) {
+                        console.log(`room ${ roomId } created`);
+                        data = room.toMsg();
+                        this.updateInfo(data);
+                    }
                 }
                 callback(data);
             });
@@ -34,6 +36,14 @@ export default class SelectSockets {
                 callback(data);
             });
 
+            socket.on('deleteRoom', (roomId: ID) => {
+                if (db.roomMap.has(roomId)) {
+                    const data = db.roomMap.get(roomId).toMsg();
+                    db.roomMap.delete(data.roomId);
+                    this.deleteInfo(data);
+                }
+            });
+
             socket.on('updateAllInfo', (callback: Function) => {
                 const keys: Array<ID> = Array.from(db.roomMap.keys());
                 const data: Array<RoomData> = keys.map(
@@ -44,8 +54,12 @@ export default class SelectSockets {
         });
     }
 
-    private updateInfo(data: RoomData) {
+    public updateInfo(data: RoomData) {
         this.selectNsp.emit('updateInfo', data);
+    }
+
+    public deleteInfo(data: RoomData) {
+        this.selectNsp.emit('deleteInfo', data);
     }
 
     private createRoom(roomId: ID, db: RoomDB): RoomInfo {
@@ -54,6 +68,7 @@ export default class SelectSockets {
             room = new RoomInfo(roomId); 
             db.roomMap.set(roomId, room);
         }
+        console.log(`createRoom -- db.roomMap`, db.roomMap);
         return room;
     }
 }
