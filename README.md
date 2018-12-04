@@ -1,5 +1,5 @@
 # socket-rooms-boilerplate
-boilerplate for implementing rooms in online games
+Typescript boilerplate for implementing rooms in online games
 
-to build/run
+to build/run:  
 `npm start`
