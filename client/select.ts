@@ -87,6 +87,7 @@ export default class Select implements Page {
 
     private deleteInfo(data: RoomData): void {
         const rowId: ID = data.roomId;
+        console.log($(`#${rowId}`));
         if (!$(`#${rowId}`).length) { // if the row exists in the DOM
             $(`#${rowId}`).remove();
         }

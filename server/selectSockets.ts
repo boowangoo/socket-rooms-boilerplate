@@ -3,18 +3,19 @@ import RoomInfo from './roomInfo';
 import { ID, RoomData } from '../types';
 import RoomDB from './roomDB';
 import Room from '../client/room';
+import { SocketConnection } from './socketSetup';
 
 export default class SelectSockets {
     private selectNsp: socketIO.Namespace;
 
-    constructor(nsp: socketIO.Namespace, db: RoomDB) {
+    constructor(nsp: socketIO.Namespace, conn: SocketConnection) {
         this.selectNsp = nsp;
 
         this.selectNsp.on('connection', (socket: socketIO.Socket) => {
             socket.on('createRoom', (roomId: ID, callback: Function) => {
                 let data: RoomData = null;
-                if (!db.roomMap.has(roomId)) {
-                    const room = this.createRoom(roomId, db);
+                if (!conn.db.roomMap.has(roomId)) {
+                    const room = this.createRoom(roomId, conn);
                     if (room) {
                         console.log(`room ${ roomId } created`);
                         data = room.toMsg();
@@ -26,8 +27,8 @@ export default class SelectSockets {
             
             socket.on('joinRoom', (roomId: ID, callback: Function) => {
                 let data: RoomData = null;
-                if (db.roomMap.has(roomId)) {
-                    const roomInfo = db.roomMap.get(roomId).incrPlayers();
+                if (conn.db.roomMap.has(roomId)) {
+                    const roomInfo = conn.db.roomMap.get(roomId).incrPlayers();
                     if (roomInfo) {
                         data = roomInfo.toMsg();
                         this.updateInfo(data);
@@ -37,17 +38,18 @@ export default class SelectSockets {
             });
 
             socket.on('deleteRoom', (roomId: ID) => {
-                if (db.roomMap.has(roomId)) {
-                    const data = db.roomMap.get(roomId).toMsg();
-                    db.roomMap.delete(data.roomId);
+                if (conn.db.roomMap.has(roomId)) {
+                    const data = conn.db.roomMap.get(roomId).toMsg();
+                    conn.db.roomMap.delete(data.roomId);
                     this.deleteInfo(data);
+                    conn.roomSockets.kickFromRoom(roomId);
                 }
             });
 
             socket.on('updateAllInfo', (callback: Function) => {
-                const keys: Array<ID> = Array.from(db.roomMap.keys());
+                const keys: Array<ID> = Array.from(conn.db.roomMap.keys());
                 const data: Array<RoomData> = keys.map(
-                    (roomId) => db.roomMap.get(roomId).toMsg()
+                    (roomId) => conn.db.roomMap.get(roomId).toMsg()
                 );
                 callback(data);
             });
@@ -62,13 +64,13 @@ export default class SelectSockets {
         this.selectNsp.emit('deleteInfo', data);
     }
 
-    private createRoom(roomId: ID, db: RoomDB): RoomInfo {
+    private createRoom(roomId: ID, conn: SocketConnection): RoomInfo {
         let room: RoomInfo = null;
-        if (!db.roomMap.has(roomId)) {
+        if (!conn.db.roomMap.has(roomId)) {
             room = new RoomInfo(roomId); 
-            db.roomMap.set(roomId, room);
+            conn.db.roomMap.set(roomId, room);
         }
-        console.log(`createRoom -- db.roomMap`, db.roomMap);
+        console.log(`createRoom -- conn.db.roomMap`, conn.db.roomMap);
         return room;
     }
 }

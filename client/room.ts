@@ -52,6 +52,10 @@ export default class Room implements Page {
                 // update failed
             }
         });
+
+        this.socket.on('kicked', () => {
+            this.delete();
+        });
         
         this.socket.on('updateWave', (playerID: ID) => {
             $('#waveMsgBox').html(playerID + ' waved!');
@@ -61,11 +65,8 @@ export default class Room implements Page {
     }
 
     public leaveRoom(): void {
-        this.socket.emit('leaveRoom', this.roomId, (data: RoomData) => {
-            if (data) {
-                this.delete();
-            }
-        });
+        this.socket.emit('leaveRoom', this.roomId);
+        this.delete();
     }
 
     public delete(): void {
