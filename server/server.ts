@@ -6,47 +6,19 @@ import { createServer, Server } from 'http';
 import { ExpressSetup } from './expressSetup';
 import { SocketConnection } from './socketSetup';
 
-class MyServer {
-    public static readonly PORT: number = 3000;
-    private app: express.Application;
-    private server: Server;
-    private io: socketIO.Server;
-    private port: string | number;
+const PORT: number = 3000;
+let app: express.Application;
+let server: Server;
+let io: socketIO.Server;
 
-    constructor() {
-        this.createApp();
-        this.config();
-        this.createServer();
-        this.sockets();
-        this.listen();
-    }
+app = express();
+ExpressSetup.setup(app);
 
-    private config(): void {
-        this.port = process.env.PORT || MyServer.PORT;
-    }
+server = createServer(app);
 
-    private createApp(): void {
-        this.app = express();
-        ExpressSetup.setup(this.app);
-    }
+io = socketIO(server);
+new SocketConnection(io);
 
-    private createServer(): void {
-        this.server = createServer(this.app);
-    }
-   
-    private sockets(): void {
-        this.io = socketIO(this.server);
-        new SocketConnection(this.io);
-    }
-
-    private listen(): void {
-        this.server.listen(this.port, () => {
-            console.log(`listening on *:${ this.port }`);
-        });   
-    }
-
-    public getApp(): express.Application { return this.app; }
-    public getServer(): Server { return this.server; }
-}
-
-const myServer = new MyServer();
+server.listen(PORT, () => {
+    console.log(`listening on *:${PORT}`);
+});

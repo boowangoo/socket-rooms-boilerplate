@@ -8,15 +8,13 @@ import { RoomData, ID, Html } from '../types';
 
 import selectHtml from './html/select.html';
 import Page from './page';
-import { inject, injectable } from 'inversify';
 
-@injectable()
 export default class Select implements Page {
     private socket: SocketIOClient.Socket;
     private router: Router;
     private roomMap: Map<ID, Room>;
 
-    constructor(@inject(Router) router: Router) {
+    constructor(router: Router) {
         this.socket = io('/select');
         this.router = router;
         this.roomMap = new Map<ID, Room>();
@@ -87,8 +85,7 @@ export default class Select implements Page {
 
     private deleteInfo(data: RoomData): void {
         const rowId: ID = data.roomId;
-        console.log($(`#${rowId}`));
-        if (!$(`#${rowId}`).length) { // if the row exists in the DOM
+        if ($(`#${rowId}`).length) { // if the row exists in the DOM
             $(`#${rowId}`).remove();
         }
         this.roomMap.delete(data.roomId);

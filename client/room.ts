@@ -7,7 +7,6 @@ import Page from './page';
 import Select from './select';
 
 import roomHtml from './html/room.html';
-import container from './config/iocConfig';
 
 export default class Room implements Page {
     private router: Router;

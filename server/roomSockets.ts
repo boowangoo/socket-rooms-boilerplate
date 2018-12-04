@@ -20,7 +20,8 @@ export default class RoomSockets {
             socket.on('leaveRoom', (roomId: ID) => {
                 socket.leave(roomId, (err: any) => {
                     if (!err) {
-                        this.leaveRoom(roomId, conn);
+                        this.leaveRoom(
+                                roomId, conn, socket.id.replace(/\/.+#/, ''));
                     }
                 });
             });
@@ -34,7 +35,12 @@ export default class RoomSockets {
             });
 
             socket.on('disconnect', () => {
-                console.log(socket.rooms)
+                conn.db.roomMap.forEach((val: RoomInfo, key: string) => {
+                    const playerId = socket.id.replace(/\/.+#/, '');
+                    if (val.players.indexOf(playerId) > -1) {
+                        this.leaveRoom(key, conn, playerId);
+                    }
+                });
             });
         });
     }
@@ -43,17 +49,15 @@ export default class RoomSockets {
         this.roomNsp.in(roomId).emit('kicked');
     }
 
-    private leaveRoom(roomId: ID, conn: SocketConnection): RoomData {
+    private leaveRoom(roomId: ID, conn: SocketConnection, playerId: ID): RoomData {
         let roomInfo: RoomInfo = null;
         if (conn.db.roomMap.has(roomId)) {
-            roomInfo = conn.db.roomMap.get(roomId).decrPlayers();
+            roomInfo = conn.db.roomMap.get(roomId).decrPlayers(playerId);
         }
         if (roomInfo) {
             this.updateInfo(roomId, conn);
             conn.selectSockets.updateInfo(roomInfo.toMsg());
         }
-        console.log('roomInfo', roomInfo);
-        console.log('roomInfo.toMsg', roomInfo.toMsg());
         return roomInfo ? roomInfo.toMsg() : null;
     }
 

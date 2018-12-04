@@ -1,9 +1,7 @@
-import { injectable } from 'inversify';
 import $ from 'jquery';
 
 import Page from './page';
 
-@injectable()
 export default class Router {
     private currPage: Page;
 

@@ -28,7 +28,8 @@ export default class SelectSockets {
             socket.on('joinRoom', (roomId: ID, callback: Function) => {
                 let data: RoomData = null;
                 if (conn.db.roomMap.has(roomId)) {
-                    const roomInfo = conn.db.roomMap.get(roomId).incrPlayers();
+                    const roomInfo = conn.db.roomMap.get(roomId)
+                            .incrPlayers(socket.id.replace(/\/.+#/, ''));
                     if (roomInfo) {
                         data = roomInfo.toMsg();
                         this.updateInfo(data);
@@ -70,7 +71,6 @@ export default class SelectSockets {
             room = new RoomInfo(roomId); 
             conn.db.roomMap.set(roomId, room);
         }
-        console.log(`createRoom -- conn.db.roomMap`, conn.db.roomMap);
         return room;
     }
 }
