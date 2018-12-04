@@ -13,14 +13,14 @@ export default class RoomSockets {
         this.roomNsp.on('connection', (socket: socketIO.Socket) => {
             socket.on('joinRoom', (roomId: ID) => {
                 console.log(socket.id + ' has joined room ' + roomId);
-                socket.join(roomId)
+                socket.join(roomId);
             });
 
             socket.on('leaveRoom', (roomId: ID, callback: Function) => {
                 let data: RoomData = null;
                 socket.leave(roomId, (err: any) => {
                     if (!err) {
-                        data = this.leaveRoom(roomId, db);
+                        data = this.leaveRoom(roomId, db, selectSockets);
                         callback(data);
                     }
                 });
@@ -36,13 +36,14 @@ export default class RoomSockets {
         });
     }
 
-    private leaveRoom(roomId: ID, db: RoomDB): RoomData {
+    private leaveRoom(roomId: ID, db: RoomDB, selectSockets: SelectSockets): RoomData {
         let roomInfo: RoomInfo = null;
         if (db.roomMap.has(roomId)) {
             roomInfo = db.roomMap.get(roomId).decrPlayers();
         }
         if (roomInfo) {
             this.updateInfo(roomId, db);
+            selectSockets.updateInfo(roomInfo.toMsg());
         }
         console.log('roomInfo', roomInfo);
         console.log('roomInfo.toMsg', roomInfo.toMsg());
