@@ -1,6 +1,5 @@
 import express from 'express';
 import socketIO from 'socket.io';
-import { injectable } from 'inversify';
 import { createServer, Server } from 'http';
 
 import { ExpressSetup } from './expressSetup';

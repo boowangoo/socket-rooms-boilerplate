@@ -1,5 +1,3 @@
-import 'reflect-metadata';
-
 import Router from './router'; 
 import Select from './select';
 

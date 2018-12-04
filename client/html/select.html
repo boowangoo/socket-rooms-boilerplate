@@ -8,12 +8,3 @@
 
 <p>Or Join a Room</p>
 <table id="roomListTable"></table>
-
-<script id="selectRoomRow" type="text/x-handlebars-template">
-  <tr id="{{ rowId }}">
-    <td id="{{ rowId }}_roomID">{{ roomId }}</td>
-    <td id="{{ rowId }}_roomCapacity">{{ players }}/{{ capacity }}</td>
-    <td id="{{ rowId }}_joinBtn"><button type="button">Join</button></td>
-    <td id="{{ rowId }}_deleteBtn"><button type="button">Delete</button></td>
-  </tr>
-</script>

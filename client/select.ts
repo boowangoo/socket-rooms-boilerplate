@@ -1,6 +1,5 @@
 import $ from 'jquery';
 import io from 'socket.io-client';
-import Handlebars from 'handlebars';
 
 import Router from './router';
 import Room from './room'
@@ -53,13 +52,14 @@ export default class Select implements Page {
     }
 
     private appendRow(rowId: ID, data: RoomData): void {
-        const template = Handlebars.compile($('#selectRoomRow').html());
-        $('#roomListTable').append(template({
-            rowId: rowId,
-            roomId: data.roomId,
-            players: data.players,
-            capacity: data.capacity,
-        }));
+        $('#roomListTable').append(
+            `<tr id="${rowId}">
+                <td id="${rowId}_roomID">${data.roomId}</td>
+                <td id = "${rowId}_roomCapacity">${data.players}/${data.capacity}</td>
+                <td id="${rowId}_joinBtn"><button type="button">Join</button></td>
+                <td id="${rowId}_deleteBtn"><button type="button">Delete</button></td>
+            </tr>`
+        );
 
         $(`#${rowId}_joinBtn`).click(() => {
             this.joinRoom(data.roomId);

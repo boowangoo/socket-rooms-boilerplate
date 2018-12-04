@@ -2,11 +2,7 @@
   "compilerOptions": {
     "target": "es5",
     "lib": ["dom", "es2015"],
-    "types": ["reflect-metadata"],
     "module": "es2015",
-    "moduleResolution": "node",
-    "experimentalDecorators": true,
-    "emitDecoratorMetadata": true,
     "outDir": "./dist/",
     "sourceMap": true,
     "noImplicitAny": true,
